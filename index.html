@@ -2206,7 +2206,7 @@ main{padding-bottom:42px;}
           </div>
           <!-- Name & desc -->
           <div class="type-name" style="background:linear-gradient(135deg,#FFD700,#FFA500,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% auto;animation:goldShimmer 3s linear infinite;font-weight:900;">Ligue Phase 36</div>
-          <div class="type-desc" style="color:rgba(255,215,0,.65);">4 chapeaux · 8 matchs/club · Top 8 direct · 9-24 barrages</div>
+          <div class="type-desc" style="color:rgba(255,215,0,.65);">36 équipes · 1 ligue · Top 8 + barrages</div>
         </div>
 
         <div class="type-card" data-cat="intl" data-tags="coupe monde 48 equipes worldcup fifa" onclick="startCreator('worldcup')">
@@ -2864,7 +2864,7 @@ Poule A - Cameroun 4 2 RDC"></textarea>
         <div style="font-size:10px;font-weight:900;color:var(--gold);letter-spacing:2px;margin-bottom:10px;">📖 COMMENT FONCTIONNE CE TIRAGE</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:10px;color:rgba(255,255,255,.7);line-height:1.6;">
           <div><div style="color:var(--gold);font-weight:700;margin-bottom:3px;">🎩 4 Chapeaux de 9</div>
-            Chapeau 1 💎 = meilleures équipes → Chapeau 4 🧨 = outsiders.<br>Les équipes du <strong style="color:#fff;">même chapeau ne se rencontrent JAMAIS</strong>.
+            Chapeau 1 💎 = meilleures équipes → Chapeau 4 🧨 = outsiders.<br>Chaque équipe tire <strong style="color:#fff;">2 adversaires dans chaque chapeau</strong>, y compris le sien.
           </div>
           <div><div style="color:var(--gold);font-weight:700;margin-bottom:3px;">⚔️ 8 matchs par club</div>
             <strong style="color:#fff;">2 adversaires par chapeau adverse</strong> (×4 chapeaux).<br>
@@ -2933,7 +2933,15 @@ Poule A - Cameroun 4 2 RDC"></textarea>
     </div>
 
     <!-- BOUTONS -->
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;position:sticky;bottom:16px;">
+    <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:20px;position:sticky;bottom:16px;">
+      <label style="display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:7px 10px;font-size:10px;color:var(--text2);letter-spacing:1px;">
+        Vitesse
+        <select id="ucl-draw-speed" class="fi" style="height:28px;width:auto;min-width:118px;padding:3px 8px;font-size:11px;">
+          <option value="1.75">Lente</option>
+          <option value="1.25" selected>Normale +</option>
+          <option value="0.85">Rapide</option>
+        </select>
+      </label>
       <button id="ucl-skip-btn" class="btn boutl" onclick="skipUCLDraw()" style="font-size:12px;letter-spacing:1px;">⏭ Passer l'animation</button>
       <button id="ucl-close-btn" class="btn bgold" onclick="closeUCLDraw()" style="display:none;font-size:13px;letter-spacing:1px;">🏆 Voir le Tournoi →</button>
     </div>
@@ -3561,6 +3569,9 @@ function generatedMatchCount(c) {
   return (c?.journees || []).reduce((a,j) => a + (j.matches || []).length, 0);
 }
 function plannedMatchCount(c) {
+  if (c?.type === 'ucl_ligue_phase') {
+    return 144 + 16 + 16 + 8 + 4 + 1;
+  }
   if (c?.type === 'groups') {
     const groupMatches = (c?.journees || []).reduce((a,j) => a + (!j.isKnockout ? (j.matches || []).length : 0), 0);
     return groupMatches + Math.max(0, (c.knockoutSlots || 0) - 1);
@@ -4177,6 +4188,10 @@ function openSeedsDraw(champIdx) {
   _seedsChampIdx = champIdx;
   const c = S.championships[champIdx];
   if (!c) return;
+  if (c.type === 'ucl_ligue_phase') {
+    showToast('🔒 Le tirage UCL 2024 Ligue Phase 36 est verrouillé.', 'tinfo');
+    return;
+  }
   const teams = c.teams || [];
   const numPots = Math.max(2, Math.ceil(Math.log2(teams.length)));
   const potSize = Math.ceil(teams.length / numPots);
@@ -4913,7 +4928,7 @@ const TYPE_LABELS = {
   groups:        {name:'Poules + Playoffs',  icon:'🎯', ppp:null},
   ucl_classic:   {name:'UCL Classique',      icon:'⭐', ppp:null, preset:{teams:32, groups:8,  qualifiers:2, hint:'8 poules de 4 — les 2 premiers passent en huitièmes.'}},
   ucl_new:       {name:'UCL Nouveau Format', icon:'🌟', ppp:null, preset:{teams:36, groups:1,  qualifiers:24,hint:'36 clubs, ligue-phase, 8 qualifiés directs + playoffs 9-24.'}},
-  ucl_ligue_phase:{name:'Ligue Phase 36 (UCL 2024)',icon:'💎',ppp:null, preset:{teams:36, groups:4, qualifiers:8, hint:'36 clubs · 4 chapeaux × 9 · 8 matchs par club · Top 8 direct · 9-24 barrages · 25-36 éliminés.'}},
+  ucl_ligue_phase:{name:'Ligue Phase 36 (UCL 2024)',icon:'💎',ppp:1, preset:{teams:36, groups:1, qualifiers:24, hint:'36 clubs · 1 seule ligue · 8 matchs par club · Top 8 direct · 9-24 barrages · 25-36 éliminés.'}},
   worldcup:      {name:'Coupe du Monde 48',  icon:'🌍', ppp:null, preset:{teams:48, groups:12, qualifiers:4, hint:'12 groupes de 4 — 2 premiers + 8 meilleurs 3es qualifiés.'}},
   worldcup32:    {name:'CdM 32 Classique',   icon:'🌐', ppp:null, preset:{teams:32, groups:8,  qualifiers:2, hint:'8 groupes de 4 — les 2 premiers (16) en huitièmes.'}},
   can:           {name:'CAN',                icon:'🦁', ppp:null, preset:{teams:24, groups:6,  qualifiers:4, hint:'6 groupes de 4 — 2 premiers + 4 meilleurs 3es en huitièmes.'}},
@@ -4934,6 +4949,7 @@ function startCreator(type) {
   if (!S.isAdmin) { openAdmin(); return; }
   creatorType = type;
   const info = TYPE_LABELS[type];
+  const isUCL36 = type === 'ucl_ligue_phase';
   document.getElementById('creator-title').textContent = info.icon + ' ' + info.name.toUpperCase();
 
   const pppInp = document.getElementById('c-ppp');
@@ -4957,7 +4973,7 @@ function startCreator(type) {
     groups:        'Phase de poules complète, puis les meilleurs passent en élimination directe.',
     ucl_classic:   '8 groupes de 4 · Les 2 premiers passent en huitièmes · KO direct jusqu\'à la finale.',
     ucl_new:       '36 clubs · Ligue-phase · 8 qualifiés directs · Playoffs pour les 9e-24e.',
-    ucl_ligue_phase:'🎩 4 chapeaux de 9 équipes · Chaque club affronte 2 équipes/chapeau · 4 domicile + 4 extérieur · Top 8 direct en 1/8 · 9e–24e en barrages A/R · 25e–36e éliminés.',
+    ucl_ligue_phase:'🏆 36 équipes dans UNE SEULE LIGUE · 4 chapeaux de 9 pour le tirage · 8 adversaires différents · 4 domicile + 4 extérieur · Top 8 direct en 1/8 · 9e–24e en barrages A/R · 25e–36e éliminés.',
     worldcup:      'CdM 2026 : 12 groupes de 4 · 2 premiers + 8 meilleurs 3es = 32 en huitièmes.',
     worldcup32:    'Format classique : 8 groupes de 4 · 16 équipes qualifiées en huitièmes.',
     can:           'CAN : 6 groupes de 4 · 2 premiers + 4 meilleurs 3es = 16 en huitièmes.',
@@ -4979,7 +4995,7 @@ function startCreator(type) {
   const baseType = isSpecialFormat ? 'groups' : type;
   const defaultTeams = preset?.teams || (type==='cup'||type==='groups'||isSpecialFormat ? 8 : type==='1v1' ? 8 : info.ppp ? 4 : 4);
 
-  document.getElementById('c-name').value = '';
+  document.getElementById('c-name').value = isUCL36 ? 'UCL 2024 - LIGUE PHASE 36' : '';
   document.getElementById('c-owner').value = '';
   document.getElementById('c-desc').value = '';
   document.getElementById('c-teams').value = defaultTeams;
@@ -4994,13 +5010,36 @@ function startCreator(type) {
   document.getElementById('c-twolegs').checked = false;
   document.getElementById('c-seeded').checked = (type==='groups'||isSpecialFormat);
   document.getElementById('c-penalties').checked = type !== '1v1';
-  document.getElementById('group-options').style.display = (type==='groups'||isSpecialFormat||type==='ucl_ligue_phase') ? '' : 'none';
+  document.getElementById('group-options').style.display = (type==='groups'||(isSpecialFormat && !isUCL36)) ? '' : 'none';
   document.getElementById('c-bulk-text').value = '';
+
+  [
+    'c-teams','c-duels','c-ptw','c-ptd','c-ptl',
+    'c-groups','c-qualifiers','c-twolegs','c-seeded','c-penalties','c-rules-note'
+  ].forEach(id => {
+    const node = document.getElementById(id);
+    if (node) node.disabled = isUCL36;
+  });
+  if (isUCL36) {
+    document.getElementById('c-teams').value = 36;
+    document.getElementById('c-duels').value = 1;
+    document.getElementById('c-ptw').value = 3;
+    document.getElementById('c-ptd').value = 1;
+    document.getElementById('c-ptl').value = 0;
+    document.getElementById('c-groups').value = 1;
+    document.getElementById('c-qualifiers').value = 24;
+    document.getElementById('c-twolegs').checked = false;
+    document.getElementById('c-seeded').checked = true;
+    document.getElementById('c-penalties').checked = true;
+    document.getElementById('c-rules-note').value = 'REGLES VERROUILLEES UCL 2024 : 36 equipes dans UNE SEULE LIGUE, 8 journees, 4 domicile, 4 exterieur, Top 8 direct, 9-24 barrages A/R, finale unique.';
+  }
 
   // Update placeholder for 1v1 specifically
   const bulkTa = document.getElementById('c-bulk-text');
   if (type === '1v1') {
     bulkTa.placeholder = '🕹️ MODE 1V1 — Colle juste les pseudos, un par ligne :\n\nADOLPHE\nAZIZ\nGAMEKIONE\nHICHAM\nGUARDIOLA\nLILIAN\nTIAKO\nMI.KB9\n\nL\'app crée automatiquement une équipe par joueur !';
+  } else if (isUCL36) {
+    bulkTa.placeholder = '💎 UCL 2024 — Colle exactement 36 participants, un par ligne :\n\nReal Madrid\nManchester City\nBayern Munich\nPSG\nInter Milan\nArsenal\n...\n\nL\'app crée 36 équipes solo dans UNE seule ligue, puis génère 8 journées : 4 domicile + 4 extérieur.';
   } else if (info.ppp && info.ppp > 1) {
     bulkTa.placeholder = `👥 MODE ${type.toUpperCase()} — Colle les pseudos par blocs de ${info.ppp}, séparés par une ligne vide :\n\nÉquipe 1\nJOUEUR_A\nJOUEUR_B${info.ppp>=3?'\nJOUEUR_C':''}${info.ppp>=4?'\nJOUEUR_D':''}${info.ppp>=5?'\nJOUEUR_E':''}${info.ppp>=6?'\nJOUEUR_F':''}\n\nÉquipe 2\nJOUEUR_G\nJOUEUR_H${info.ppp>=3?'\nJOUEUR_I':''}${info.ppp>=4?'\nJOUEUR_J':''}${info.ppp>=5?'\nJOUEUR_K':''}${info.ppp>=6?'\nJOUEUR_L':''}\n\nOu format en une ligne :\nBurkina Faso : ADOLPHE, AZIZ${info.ppp>=3?', GAMEKIONE':''}${info.ppp>=4?', HICHAM':''}`;
   } else {
@@ -5008,7 +5047,12 @@ function startCreator(type) {
   }
 
   clampGroupOptions();
-  creatorGoStep(1);
+  if (isUCL36) {
+    buildTeamInputs();
+    creatorGoStep(2);
+  } else {
+    creatorGoStep(1);
+  }
   openOvl('ovl-creator');
 }
 
@@ -5028,7 +5072,7 @@ function getGroupConfig(teamCount) {
 }
 function clampGroupOptions() {
   const box = document.getElementById('group-options');
-  const isGroupType = creatorType === 'groups' || Boolean(TYPE_LABELS[creatorType]?.preset);
+  const isGroupType = creatorType === 'groups' || (creatorType !== 'ucl_ligue_phase' && Boolean(TYPE_LABELS[creatorType]?.preset));
   if (!box || !isGroupType) return;
   const n = Math.max(2, parseInt(document.getElementById('c-teams')?.value) || 4);
   const cfg = getGroupConfig(n);
@@ -5069,6 +5113,10 @@ function creatorNext(toStep) {
   if (toStep===3) {
     const teams = collectTeams();
     if (!teams) return;
+    if (creatorType === 'ucl_ligue_phase' && teams.length !== 36) {
+      showToast('⚠️ Le format UCL 2024 Ligue Phase demande exactement 36 équipes.','terr');
+      return;
+    }
     buildCreatorPreview(teams);
   }
   creatorGoStep(toStep);
@@ -5176,6 +5224,24 @@ function looksLikeTeamName(line) {
   return hasFlag || hasColon || isAllCaps || hasCountryWords;
 }
 
+function cleanUCLParticipantLine(line) {
+  let text = cleanText(line, 160);
+  text = text.replace(/^\s*\d+\s*[\).:\-–—]\s*/, '');
+  text = text.replace(/^\s*[-*•·]\s*/, '');
+  text = text.replace(/^\s*(?:participant|joueur|team|equipe|équipe)\s*\d*\s*[:\-–—]\s*/i, '');
+  text = cleanText(text, 120);
+  if (/^(?:poule|groupe|chapeau)\s*[a-z0-9]*$/i.test(text)) return '';
+  const sep = text.match(/[:：]|=>|\s[-–—]\s/);
+  if (sep) {
+    const idx = text.search(/[:：]|=>|\s[-–—]\s/);
+    const left = cleanText(text.slice(0, idx), 80);
+    const right = cleanText(text.slice(idx + sep[0].length), 80);
+    if (/^\d+$/.test(left) || /^(?:participant|joueur|team|equipe|équipe)$/i.test(left)) text = right;
+    else if (right) text = left;
+  }
+  return cleanText(text, 70);
+}
+
 // ─── MAIN SMART PARSER ───
 // Handles ALL formats: 1v1, 2v2, ..., Nvv, long lists, numbered, mixed
 function parseBulkTeamsSmart(text) {
@@ -5198,6 +5264,26 @@ function parseBulkTeamsSmart(text) {
 
   // Strategy 1: Lines with ":" → each line = 1 team + players
   const allLines = raw.split('\n').map(l => cleanText(l, 220)).filter(Boolean);
+
+  if (creatorType === 'ucl_ligue_phase') {
+    allLines.forEach(line => {
+      const name = cleanUCLParticipantLine(line);
+      if (!name) return;
+      const header = parseTeamHeader(name);
+      const participantName = cleanText(header.name || name, 70);
+      if (!participantName) return;
+      const logo = cleanLogo(header.logo) || initials(participantName);
+      const player = normalizePlayer({name:participantName, logo});
+      addTeam({
+        flag: header.flag || '🏳️',
+        logo: logo || header.flag || initials(participantName),
+        name: participantName,
+        players: [player],
+      });
+    });
+    return finalize(teams);
+  }
+
   const colonLines = allLines.filter(l => /[:：]/.test(l));
   if (colonLines.length >= 2 && colonLines.length >= allLines.filter(l => stripBullet(l)).length * 0.4) {
     allLines.forEach(line => {
@@ -5240,8 +5326,24 @@ function parseBulkTeamsSmart(text) {
   // Strategy 3: 1v1 / flat player list — each line is a player = their own team
   // Detect: no colons, no empty lines, just pseudos
   const cleanedLines = allLines.map(stripBullet).filter(Boolean);
-  const noColons = cleanedLines.every(l => !/:/.test(l));
+  const noColons = cleanedLines.every(l => !hasTeamSeparator(l));
   const hasSections = cleanedLines.some(l => looksLikeTeamName(l));
+
+  if (creatorType === 'ucl_ligue_phase' && noColons && cleanedLines.length >= 2) {
+    cleanedLines.forEach(line => {
+      const header = parseTeamHeader(line);
+      const name = cleanText(header.name || line, 60);
+      if (!name) return;
+      const player = normalizePlayer({name, logo: cleanLogo(header.logo) || initials(name)});
+      addTeam({
+        flag: header.flag || '🎮',
+        logo: header.logo || header.flag || initials(name),
+        name,
+        players: [player],
+      });
+    });
+    if (teams.length >= 2) return finalize(teams);
+  }
 
   if (noColons && !hasSections) {
     // Pure flat list — detect ppp from creator type or form
@@ -5438,6 +5540,21 @@ function collectTeams() {
 }
 
 function collectCreatorRules(ppp, teamCount = null) {
+  if (creatorType === 'ucl_ligue_phase') {
+    return normalizeRules({
+      duelsPerMatch: Math.min(ppp, clampNum(document.getElementById('c-duels').value, 1, 20, 4)),
+      ptsWin: 3,
+      ptsDraw: 1,
+      ptsLoss: 0,
+      note: 'REGLES VERROUILLEES UCL 2024 : 36 equipes dans UNE SEULE LIGUE, 8 journees, 4 domicile, 4 exterieur, Top 8 direct, 9-24 barrages A/R, finale unique.',
+      noDraw: false,
+      groupCount: 1,
+      qualifiersPerGroup: 0,
+      twoLegged: false,
+      seededDraw: true,
+      penalties: true,
+    });
+  }
   const cfg = creatorType === 'groups' ? getGroupConfig(teamCount || parseInt(document.getElementById('c-teams').value) || 4) : null;
   return normalizeRules({
     duelsPerMatch: Math.min(ppp, clampNum(document.getElementById('c-duels').value, 1, 20, ppp)),
@@ -5498,7 +5615,7 @@ function buildCreatorPreview(teams) {
 
 function potsPreviewHtml(teams, rules = {}) {
   const isLiguePhase = creatorType === 'ucl_ligue_phase';
-  const potSize = isLiguePhase ? 4 : Math.max(2, normalizeRules(rules).groupCount || 2);
+  const potSize = isLiguePhase ? Math.ceil(teams.length / 4) : Math.max(2, normalizeRules(rules).groupCount || 2);
   const pots = [];
   for (let i=0; i<teams.length; i+=potSize) pots.push(teams.slice(i, i + potSize));
   const potEmojis = isLiguePhase ? ['💎','🔷','🔵','🧨'] : [];
@@ -5522,6 +5639,10 @@ function createChampionship() {
   if (!S.isAdmin) { openAdmin(); return; }
   const teams = collectTeams();
   if (!teams) return;
+  if (creatorType === 'ucl_ligue_phase' && teams.length !== 36) {
+    showToast('⚠️ Le format UCL 2024 Ligue Phase demande exactement 36 équipes.','terr');
+    return;
+  }
   const name = cleanText(document.getElementById('c-name').value, 70);
   const owner = cleanText(document.getElementById('c-owner').value, 70) || 'Organisateur libre';
   const desc = cleanText(document.getElementById('c-desc').value, 140);
@@ -5710,7 +5831,7 @@ async function _runUCLDrawSequence(pots, champ, teamCalendars) {
     // Activer ce chapeau
     _renderUCLPots(pots, pi);
     _updateUCLProgress(`🎩 ${UCL_POT_LABELS[pi]} — Tirage en cours...`, teamsProcessed, totalTeams);
-    await _sleep(1200);
+    await _sleep(_uclDelay(1200));
 
     for (let ti = 0; ti < pots[pi].teams.length; ti++) {
       if (_uclDrawSkipped) return _finishUCLDraw(champ, teamCalendars);
@@ -5735,7 +5856,7 @@ async function _runUCLDrawSequence(pots, champ, teamCalendars) {
         // Phase spinning
         slotEl.classList.add('spinning');
         slotEl.innerHTML = `<div style="font-size:28px;animation:ballSpin .5s linear infinite;">⚽</div><div style="font-size:9px;color:var(--text2);margin-top:4px;">Tirage...</div>`;
-        await _sleep(700);
+        await _sleep(_uclDelay(700));
         if (_uclDrawSkipped) return _finishUCLDraw(champ, teamCalendars);
 
         // Révéler adversaire dom
@@ -5767,17 +5888,17 @@ async function _runUCLDrawSequence(pots, champ, teamCalendars) {
             <span style="font-size:10px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff;">${esc(opp2.opp)}</span>
           </div>` : ''}
         `;
-        await _sleep(slotPi < 3 ? 900 : 600);
+        await _sleep(_uclDelay(slotPi < 3 ? 900 : 600));
       }
 
       teamsProcessed++;
       _updateUCLProgress(`✅ ${esc(team.name)} — calendrier complet`, teamsProcessed, totalTeams);
-      await _sleep(1400);
+      await _sleep(_uclDelay(1400));
     }
 
     // Chapeau terminé
     _updateUCLProgress(`✅ ${UCL_POT_LABELS[pi]} terminé`, teamsProcessed, totalTeams);
-    await _sleep(800);
+    await _sleep(_uclDelay(800));
   }
 
   // Tout terminé → afficher résumé
@@ -5941,6 +6062,11 @@ function _sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function _uclDelay(ms) {
+  const speed = Number.parseFloat(document.getElementById('ucl-draw-speed')?.value || '1.25');
+  return Math.max(120, Math.round(ms * (Number.isFinite(speed) ? speed : 1.25)));
+}
+
 // ═══════════════════════════════════════════════════════════
 // 🎩 LIGUE PHASE 36 — FORMAT UCL 2024-2025 — ALGORITHME GARANTI
 // ═══════════════════════════════════════════════════════════
@@ -6083,6 +6209,173 @@ function buildLiguePhase36Journees(teams, rules = {}) {
   }
 
   return journees;
+}
+
+// Version stricte UCL 2024 : 36 equipes, 8 journees pleines, 4 domicile + 4 exterieur.
+function buildLiguePhase36Journees(teams, rules = {}) {
+  const nr = normalizeRules(rules);
+  const duelCount = nr.duelsPerMatch;
+  const allTeams = teams.map(teamClone);
+  if (allTeams.length !== 36) {
+    showToast('⚠️ UCL Ligue Phase 36 demande exactement 36 équipes.', 'terr');
+    return [];
+  }
+
+  const potCount = 4;
+  const potSize = 9;
+  const pots = [];
+  for (let p = 0; p < potCount; p++) {
+    pots.push(shuf(allTeams.slice(p * potSize, (p + 1) * potSize)));
+  }
+
+  function internalPairs(A) {
+    const pairs = [];
+    for (let i = 0; i < A.length; i++) {
+      pairs.push({ a:A[i], b:A[(i + 1) % A.length], home:true });
+    }
+    return pairs;
+  }
+
+  function crossPairs(A, B) {
+    const pairs = [];
+    const k = Math.ceil(A.length / 2);
+    for (let i = 0; i < A.length; i++) {
+      pairs.push({ a:A[i], b:B[i % B.length], home:true });
+      pairs.push({ a:A[i], b:B[(i + k) % B.length], home:false });
+    }
+    return pairs;
+  }
+
+  const edges = [];
+  const usedKeys = new Set();
+  for (let pi = 0; pi < potCount; pi++) {
+    for (let pj = pi; pj < potCount; pj++) {
+      const A = shuf([...pots[pi]]);
+      const B = shuf([...pots[pj]]);
+      const pairs = pi === pj ? internalPairs(A) : crossPairs(A, B);
+      pairs.forEach(({a, b, home}) => {
+        if (!a || !b || a.name === b.name) return;
+        const key = [a.name, b.name].sort().join('|');
+        if (usedKeys.has(key)) return;
+        usedKeys.add(key);
+        edges.push({
+          a:a.name,
+          b:b.name,
+          home,
+          homeTeam: home ? a : b,
+          awayTeam: home ? b : a,
+        });
+      });
+    }
+  }
+
+  const names = allTeams.map(t => t.name);
+  const colors = colorUCLLeagueEdges(edges, names, 8);
+  if (!colors) {
+    showToast('⚠️ Tirage UCL impossible à équilibrer, relancez le tirage.', 'terr');
+    return [];
+  }
+
+  const schedules = {};
+  allTeams.forEach(t => { schedules[t.name] = []; });
+  edges.forEach((edge) => {
+    const potA = pots.findIndex(p => p.some(t => t.name === edge.a));
+    const potB = pots.findIndex(p => p.some(t => t.name === edge.b));
+    schedules[edge.a].push({
+      opp: edge.b,
+      home: edge.home,
+      potIdx: potB,
+      oppTeam: getChampLikeTeam(edge.b, allTeams),
+    });
+    schedules[edge.b].push({
+      opp: edge.a,
+      home: !edge.home,
+      potIdx: potA,
+      oppTeam: getChampLikeTeam(edge.a, allTeams),
+    });
+  });
+
+  Object.keys(schedules).forEach(name => {
+    schedules[name].sort((x, y) => colors[edges.findIndex(e => (e.a === name && e.b === x.opp) || (e.b === name && e.a === x.opp))] -
+      colors[edges.findIndex(e => (e.a === name && e.b === y.opp) || (e.b === name && e.a === y.opp))]);
+  });
+
+  const journees = Array.from({length:8}, (_, i) => ({
+    j:i + 1,
+    matches:[],
+    stage:'ligue_phase',
+    roundName:`Journée ${i + 1}`,
+  }));
+
+  edges.forEach((edge, idx) => {
+    journees[colors[idx]].matches.push(makeChampMatch(edge.homeTeam, edge.awayTeam, duelCount));
+  });
+
+  journees.forEach(j => {
+    j.matches.sort((m1, m2) => m1.a.localeCompare(m2.a, 'fr') || m1.b.localeCompare(m2.b, 'fr'));
+  });
+
+  journees[0].drawPots = pots.map((pot, i) => ({
+    potNum:i + 1,
+    label:['💎 Chapeau 1','🔷 Chapeau 2','🔵 Chapeau 3','🧨 Chapeau 4'][i] || `Chapeau ${i + 1}`,
+    teams:pot.map(t => ({name:t.name, flag:t.flag, logo:t.logo || t.flag})),
+  }));
+  journees[0].teamSchedules = schedules;
+  return journees;
+}
+
+function colorUCLLeagueEdges(edges, teamNames, roundCount = 8) {
+  const usedByTeam = {};
+  teamNames.forEach(name => { usedByTeam[name] = new Set(); });
+  const colors = Array(edges.length).fill(-1);
+  const roundLoads = Array(roundCount).fill(0);
+  const deadline = Date.now() + 2500;
+  let steps = 0;
+
+  function orderedColors(avail) {
+    return avail.slice().sort((a, b) => roundLoads[a] - roundLoads[b] || a - b);
+  }
+
+  function dfs(doneCount) {
+    if (++steps % 5000 === 0 && Date.now() > deadline) return false;
+    if (doneCount === edges.length) return roundLoads.every(load => load === 18);
+
+    let bestIdx = -1;
+    let bestAvail = null;
+    let bestScore = -1;
+    for (let i = 0; i < edges.length; i++) {
+      if (colors[i] >= 0) continue;
+      const edge = edges[i];
+      const avail = [];
+      for (let c = 0; c < roundCount; c++) {
+        if (roundLoads[c] < 18 && !usedByTeam[edge.a].has(c) && !usedByTeam[edge.b].has(c)) avail.push(c);
+      }
+      if (!avail.length) return false;
+      const score = usedByTeam[edge.a].size + usedByTeam[edge.b].size;
+      if (!bestAvail || avail.length < bestAvail.length || (avail.length === bestAvail.length && score > bestScore)) {
+        bestIdx = i;
+        bestAvail = avail;
+        bestScore = score;
+        if (avail.length === 1 && score >= 14) break;
+      }
+    }
+
+    const edge = edges[bestIdx];
+    for (const color of orderedColors(bestAvail)) {
+      colors[bestIdx] = color;
+      roundLoads[color]++;
+      usedByTeam[edge.a].add(color);
+      usedByTeam[edge.b].add(color);
+      if (dfs(doneCount + 1)) return true;
+      usedByTeam[edge.a].delete(color);
+      usedByTeam[edge.b].delete(color);
+      roundLoads[color]--;
+      colors[bestIdx] = -1;
+    }
+    return false;
+  }
+
+  return dfs(0) ? colors : null;
 }
 
 // Rendu classement Ligue Phase 36 avec zones de qualification
@@ -6303,10 +6596,11 @@ function renderLiguePhase36Draw(c) {
 }
 
 // ─── BARRAGES Ligue Phase 36 : places 9-24 ───
-function buildBarragesLiguePhase(idx) {
-  if (!S.isAdmin) { openAdmin(); return; }
+function buildBarragesLiguePhase(idx, auto = false) {
+  if (!auto && !S.isAdmin) { openAdmin(); return; }
   const c = S.championships[idx];
   if (!c || c.type !== 'ucl_ligue_phase') return;
+  if ((c.journees||[]).some(j => j.stage === 'barrage')) return;
   const standings = computeChStandings(c);
   if (standings.length < 24) { showToast('⚠️ Classement incomplet.','terr'); return; }
 
@@ -6328,8 +6622,9 @@ function buildBarragesLiguePhase(idx) {
   c.journees.push({
     j: nextJ,
     matches: barrageMatches,
-    isKnockout: false,
+    isKnockout: true,
     stage: 'barrage',
+    leg: 'aller',
     roundName: '🔥 BARRAGES — ALLER (9e-24e)',
   });
 
@@ -6342,21 +6637,23 @@ function buildBarragesLiguePhase(idx) {
   c.journees.push({
     j: nextJ + 1,
     matches: retourMatches,
-    isKnockout: false,
+    isKnockout: true,
     stage: 'barrage',
+    leg: 'retour',
     roundName: '🔥 BARRAGES — RETOUR (9e-24e)',
   });
 
   saveS();
-  openChamp(idx);
+  if (!auto) openChamp(idx);
   showToast('⚡ Barrages générés ! 8 duels aller-retour créés (9e-24e)');
 }
 
 // ─── Génère les 1/8 de finale après barrages ───
-function buildEighthsLiguePhase(idx) {
-  if (!S.isAdmin) { openAdmin(); return; }
+function buildEighthsLiguePhase(idx, auto = false) {
+  if (!auto && !S.isAdmin) { openAdmin(); return; }
   const c = S.championships[idx];
   if (!c || c.type !== 'ucl_ligue_phase') return;
+  if ((c.journees||[]).some(j => j.stage === 'eighth')) return;
 
   const standings = computeChStandings(c);
   const top8 = standings.slice(0, 8).map(r => getChampTeam(c, r.name) || r);
@@ -6383,10 +6680,8 @@ function buildEighthsLiguePhase(idx) {
       const scR = matchScore(mR);
       // Aller: mA.a vs mA.b; Retour: mR.a vs mR.b (= mA.b vs mA.a)
       // Total: goals mA.a = scA.a + scR.b; goals mA.b = scA.b + scR.a
-      const totalA = scA.a + scR.b;
-      const totalB = scA.b + scR.a;
-      const winner = totalA > totalB ? mA.a : totalB > totalA ? mA.b :
-        (scR.a > scR.b ? mR.a : mR.b); // away goals / match retour gagnant
+      const winner = getUCLTwoLegWinnerName(c, 'barrage', i);
+      if (!winner) continue;
       barrageWinners.push(getChampTeam(c, winner) || {name:winner,flag:'🏳️',logo:initials(winner),players:[]});
     }
   }
@@ -6404,18 +6699,157 @@ function buildEighthsLiguePhase(idx) {
     allerMatches.push(makeChampMatch(qualified[qualified.length-1-i], qualified[i], rules.duelsPerMatch));
   }
 
-  c.journees.push({j: nextJ, matches: allerMatches, isKnockout: true, stage:'eighth', roundName:'⚡ 1/8 DE FINALE — ALLER'});
+  c.journees.push({j: nextJ, matches: allerMatches, isKnockout: true, stage:'eighth', leg:'aller', roundName:'⚡ 1/8 DE FINALE — ALLER'});
 
   const retourMatches = allerMatches.map(m => {
     const tA = getChampTeam(c, m.b) || {name:m.b,flag:'🏳️',logo:initials(m.b),players:[]};
     const tB = getChampTeam(c, m.a) || {name:m.a,flag:'🏳️',logo:initials(m.a),players:[]};
     return makeChampMatch(tA, tB, rules.duelsPerMatch);
   });
-  c.journees.push({j: nextJ+1, matches: retourMatches, isKnockout: true, stage:'eighth', roundName:'⚡ 1/8 DE FINALE — RETOUR'});
+  c.journees.push({j: nextJ+1, matches: retourMatches, isKnockout: true, stage:'eighth', leg:'retour', roundName:'⚡ 1/8 DE FINALE — RETOUR'});
 
   saveS();
-  openChamp(idx);
+  if (!auto) openChamp(idx);
   showToast('🏆 1/8 de finale générés ! (8 duels aller-retour)');
+}
+
+function isUCLTwoLegStage(stage) {
+  return ['barrage','eighth','quarter','semi'].includes(stage);
+}
+
+function getUCLStageLegs(c, stage) {
+  const rounds = (c.journees || []).filter(j => j.stage === stage);
+  return {
+    aller: rounds.find(j => j.leg === 'aller' || /ALLER/i.test(j.roundName || '')),
+    retour: rounds.find(j => j.leg === 'retour' || /RETOUR/i.test(j.roundName || '')),
+  };
+}
+
+function uclTwoLegAggregateIsTied(c, stage, matchIdx) {
+  const {aller, retour} = getUCLStageLegs(c, stage);
+  const mA = aller?.matches?.[matchIdx];
+  const mR = retour?.matches?.[matchIdx];
+  if (!mA || !mR || !mA.done) return false;
+  const scA = matchScore(mA);
+  const scR = matchScore(mR);
+  return (scA.a + scR.b) === (scA.b + scR.a);
+}
+
+function getUCLTwoLegWinnerName(c, stage, matchIdx) {
+  const {aller, retour} = getUCLStageLegs(c, stage);
+  const mA = aller?.matches?.[matchIdx];
+  const mR = retour?.matches?.[matchIdx];
+  if (!mA || !mR || !mA.done || !mR.done) return null;
+  const scA = matchScore(mA);
+  const scR = matchScore(mR);
+  const totalA = scA.a + scR.b;
+  const totalB = scA.b + scR.a;
+  if (totalA > totalB) return mA.a;
+  if (totalB > totalA) return mA.b;
+  if (mR.psoA != null && mR.psoB != null && mR.psoA !== mR.psoB) {
+    return mR.psoA > mR.psoB ? mR.a : mR.b;
+  }
+  return null;
+}
+
+function uclStageComplete(c, stage) {
+  if (stage === 'ligue_phase') {
+    const rounds = (c.journees || []).filter(j => j.stage === 'ligue_phase');
+    return rounds.length === 8 && rounds.every(j => (j.matches || []).every(m => m.done));
+  }
+  if (isUCLTwoLegStage(stage)) {
+    const {aller, retour} = getUCLStageLegs(c, stage);
+    return Boolean(aller && retour) &&
+      (aller.matches || []).every(m => m.done) &&
+      (retour.matches || []).every(m => m.done);
+  }
+  const final = (c.journees || []).find(j => j.stage === 'final');
+  return Boolean(final) && (final.matches || []).every(m => m.done);
+}
+
+function buildNextUCLKnockoutRound(c, currentStage) {
+  const flow = {
+    eighth:  {next:'quarter', label:'1/4 DE FINALE'},
+    quarter: {next:'semi',    label:'1/2 FINALE'},
+    semi:    {next:'final',   label:'FINALE'},
+  };
+  const cfg = flow[currentStage];
+  if (!cfg || (c.journees || []).some(j => j.stage === cfg.next)) return;
+  if (!uclStageComplete(c, currentStage)) return;
+
+  const {aller} = getUCLStageLegs(c, currentStage);
+  const winners = (aller?.matches || []).map((_, i) => getUCLTwoLegWinnerName(c, currentStage, i))
+    .filter(Boolean)
+    .map(name => getChampTeam(c, name) || {name, flag:'🏳️', logo:initials(name), players:[]});
+  if (winners.length < 2) return;
+
+  const rules = normalizeRules(c.rules || {});
+  const duelCount = rules.duelsPerMatch;
+  const nextJ = Math.max(0, ...(c.journees || []).map(j => j.j || 0)) + 1;
+  const matches = [];
+  for (let i = 0; i < winners.length / 2; i++) {
+    matches.push(makeChampMatch(winners[winners.length - 1 - i], winners[i], duelCount));
+  }
+
+  if (cfg.next === 'final') {
+    c.journees.push({
+      j: nextJ,
+      matches,
+      isKnockout:true,
+      stage:'final',
+      roundName:'🏆 FINALE',
+    });
+    showToast('🏆 Finale générée !');
+    return;
+  }
+
+  c.journees.push({
+    j: nextJ,
+    matches,
+    isKnockout:true,
+    stage:cfg.next,
+    leg:'aller',
+    roundName:`⚡ ${cfg.label} — ALLER`,
+  });
+  const retourMatches = matches.map(m => {
+    const tA = getChampTeam(c, m.b) || {name:m.b, flag:'🏳️', logo:initials(m.b), players:[]};
+    const tB = getChampTeam(c, m.a) || {name:m.a, flag:'🏳️', logo:initials(m.a), players:[]};
+    return makeChampMatch(tA, tB, duelCount);
+  });
+  c.journees.push({
+    j: nextJ + 1,
+    matches:retourMatches,
+    isKnockout:true,
+    stage:cfg.next,
+    leg:'retour',
+    roundName:`⚡ ${cfg.label} — RETOUR`,
+  });
+  showToast(`🏆 ${cfg.label} généré !`);
+}
+
+function advanceUCLLiguePhase(c, round) {
+  const idx = S.championships.indexOf(c);
+  if (idx < 0) return;
+  if (uclStageComplete(c, 'ligue_phase') && !(c.journees || []).some(j => j.stage === 'barrage')) {
+    buildBarragesLiguePhase(idx, true);
+    return;
+  }
+  if (uclStageComplete(c, 'barrage') && !(c.journees || []).some(j => j.stage === 'eighth')) {
+    buildEighthsLiguePhase(idx, true);
+    return;
+  }
+  if (['eighth','quarter','semi'].includes(round?.stage)) {
+    buildNextUCLKnockoutRound(c, round.stage);
+    return;
+  }
+  if (round?.stage === 'final' && uclStageComplete(c, 'final')) {
+    const finalMatch = round.matches?.[0];
+    const winner = finalMatch ? getChampWinner(c, finalMatch) : null;
+    if (winner) {
+      c.done = true;
+      c.winner = winner;
+    }
+  }
 }
 
 function buildRoundRobinJournees(teams, rules = {}) {
@@ -6556,6 +6990,7 @@ function advanceKnockout(c, round) {
   c.journees.push(buildKnockoutRound(winners, normalizeRules(c.rules || {duelsPerMatch:c.duelsPerMatch || c.ppp}).duelsPerMatch, round.j + 1));
 }
 function advanceTournament(c, round) {
+  if (c.type === 'ucl_ligue_phase') advanceUCLLiguePhase(c, round);
   if (c.type === 'groups' && !round?.isKnockout) buildKnockoutFromGroups(c);
   if ((c.type === 'cup' || c.type === 'groups') && round?.isKnockout) advanceKnockout(c, round);
 }
@@ -6835,7 +7270,7 @@ function openChamp(idx) {
         <button class="btn bgold bsm" onclick="exportECIChampStats(${idx})" style="letter-spacing:.5px;">📊 ECI — Stats</button>
         <button class="btn boutl bsm" onclick="printStandingsPDF('champ',${idx})">📄 PDF</button>
         <button class="btn bpurp bsm" onclick="openChampTheme(${idx})">🎨 Thème</button>
-        <button class="btn boutl bsm" onclick="openSeedsDraw(${idx})">🎯 Têtes série</button>
+        ${c.type === 'ucl_ligue_phase' ? '' : `<button class="btn boutl bsm" onclick="openSeedsDraw(${idx})">🎯 Têtes série</button>`}
         <button class="btn boutl bsm" onclick="openQR()">📱 QR</button>
       </div>
     </div>
@@ -7343,7 +7778,9 @@ function computeChStandings(c) {
   const s = {};
   const rules = normalizeRules(c.rules || {});
   (c.teams || []).forEach(t => { s[t.name]={name:t.name,flag:t.flag,j:0,v:0,n:0,d:0,bp:0,bc:0,pts:0}; });
-  (c.journees || []).forEach(j => (j.matches || []).forEach(m => {
+  (c.journees || []).forEach(j => {
+    if (c.type === 'ucl_ligue_phase' && j.stage !== 'ligue_phase') return;
+    (j.matches || []).forEach(m => {
     if (!m.done || !s[m.a] || !s[m.b]) return;
     const score = matchScore(m);
     s[m.a].j++; s[m.b].j++;
@@ -7352,7 +7789,8 @@ function computeChStandings(c) {
     if      (score.a>score.b) { s[m.a].v++; s[m.a].pts+=rules.ptsWin; s[m.b].d++; s[m.b].pts+=rules.ptsLoss; }
     else if (score.b>score.a) { s[m.b].v++; s[m.b].pts+=rules.ptsWin; s[m.a].d++; s[m.a].pts+=rules.ptsLoss; }
     else                      { s[m.a].n++; s[m.b].n++; s[m.a].pts+=rules.ptsDraw; s[m.b].pts+=rules.ptsDraw; }
-  }));
+    });
+  });
   return Object.values(s).sort((a,b) => {
     if (b.pts!==a.pts) return b.pts-a.pts;
     const h2h = headToHeadDiff(c, a.name, b.name);
@@ -7366,7 +7804,9 @@ function computeChStandings(c) {
 function headToHeadDiff(c, teamA, teamB) {
   let ptsA = 0, ptsB = 0, gdA = 0, gdB = 0;
   const rules = normalizeRules(c.rules || {});
-  (c.journees || []).forEach(j => (j.matches || []).forEach(m => {
+  (c.journees || []).forEach(j => {
+    if (c.type === 'ucl_ligue_phase' && j.stage !== 'ligue_phase') return;
+    (j.matches || []).forEach(m => {
     if (!m.done || !((m.a === teamA && m.b === teamB) || (m.a === teamB && m.b === teamA))) return;
     const score = matchScore(m);
     const aScore = m.a === teamA ? score.a : score.b;
@@ -7376,7 +7816,8 @@ function headToHeadDiff(c, teamA, teamB) {
     if (aScore > bScore) { ptsA += rules.ptsWin; ptsB += rules.ptsLoss; }
     else if (bScore > aScore) { ptsB += rules.ptsWin; ptsA += rules.ptsLoss; }
     else { ptsA += rules.ptsDraw; ptsB += rules.ptsDraw; }
-  }));
+    });
+  });
   if (ptsA !== ptsB) return ptsA - ptsB;
   return gdA - gdB;
 }
@@ -7430,7 +7871,13 @@ function valChMatch(chIdx, jNum, mi) {
   if (!isMatchComplete(m)) { showToast('⚠️ Scores incomplets.','terr'); return; }
   const score = matchScore(m);
   const rules = normalizeRules(c.rules || {});
-  if ((j.isKnockout || c.type === 'cup' || rules.noDraw) && score.a === score.b) {
+  const isUCLTwoLeg = c.type === 'ucl_ligue_phase' && isUCLTwoLegStage(j.stage);
+  if (isUCLTwoLeg && j.leg === 'retour' && uclTwoLegAggregateIsTied(c, j.stage, mi)) {
+    if (!rules.penalties || m.psoA == null || m.psoB == null || m.psoA === m.psoB) {
+      showToast('⚠️ Egalite sur aller-retour : ajoutez les tirs au but sur le match retour.','terr');
+      return;
+    }
+  } else if (!isUCLTwoLeg && (j.isKnockout || c.type === 'cup' || rules.noDraw) && score.a === score.b) {
     if (!rules.penalties || m.psoA == null || m.psoB == null || m.psoA === m.psoB) {
       showToast('⚠️ Ajoutez un vainqueur ou des tirs au but.','terr');
       return;
@@ -7466,6 +7913,16 @@ function unlockChMatch(chIdx, jNum, mi) {
     } else if (j.isKnockout && c.journees.some(x => x.isKnockout && x.j > jNum)) {
       if (!confirm('Corriger ce match supprimera les tours éliminatoires suivants. Continuer ?')) return;
       pruneGroupKnockouts(c, jNum);
+    }
+  }
+  if (c.type === 'ucl_ligue_phase') {
+    const hasFutureUCL = j.stage === 'ligue_phase'
+      ? c.journees.some(x => x.stage !== 'ligue_phase')
+      : c.journees.some(x => x.j > jNum);
+    if (hasFutureUCL) {
+      if (!confirm('Corriger ce match supprimera les tours UCL générés après cette journée. Continuer ?')) return;
+      if (j.stage === 'ligue_phase') c.journees = c.journees.filter(x => x.stage === 'ligue_phase');
+      else pruneFutureRounds(c, jNum);
     }
   }
   m.done = false;
